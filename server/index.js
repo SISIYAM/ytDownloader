@@ -13,6 +13,14 @@ app.get("/formats", async (req, res) => {
       return res.status(400).json({ error: "URL is required" });
     }
 
+    // Validate the URL
+    const videoIdMatch = videoUrl.match(
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
+    if (!videoIdMatch) {
+      return res.status(400).json({ error: "Invalid YouTube URL" });
+    }
+
     const info = await ytdl.getInfo(videoUrl);
     const videoFormats = ytdl.filterFormats(info.formats, "video");
     const audioFormats = ytdl.filterFormats(info.formats, "audioonly");
@@ -29,14 +37,15 @@ app.get("/formats", async (req, res) => {
 // Route to download video
 app.get("/download/video", async (req, res) => {
   const videoUrl = req.query.url;
+  const quality = req.query.quality;
 
-  if (!videoUrl) {
-    return res.status(400).json({ error: "URL is required" });
+  if (!videoUrl || !quality) {
+    return res.status(400).json({ error: "URL and quality are required" });
   }
 
   try {
     res.header("Content-Disposition", `attachment; filename="video.mp4"`);
-    ytdl(videoUrl, { quality: "highestvideo" }) // Adjust as needed
+    ytdl(videoUrl, { quality })
       .on("error", (error) => {
         console.error("Error downloading video:", error);
         res
@@ -55,16 +64,17 @@ app.get("/download/video", async (req, res) => {
 // Route to download audio
 app.get("/download/audio", async (req, res) => {
   const videoUrl = req.query.url;
+  const quality = req.query.quality;
 
-  if (!videoUrl) {
-    return res.status(400).json({ error: "URL is required" });
+  if (!videoUrl || !quality) {
+    return res.status(400).json({ error: "URL and quality are required" });
   }
 
   try {
     res.header("Content-Disposition", `attachment; filename="audio.mp3"`);
 
     const audioStream = ytdl(videoUrl, {
-      filter: (format) => format.hasAudio,
+      filter: (format) => format.hasAudio && format.itag === parseInt(quality),
       requestOptions: {
         headers: {
           "User-Agent":
