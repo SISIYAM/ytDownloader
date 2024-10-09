@@ -1,0 +1,47 @@
+/* App.css */
+
+/* Container for formats to align them in a row and wrap */
+.formats-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px; /* Adjust the space between items */
+  margin-bottom: 20px;
+}
+
+.format-item {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s; /* Transition for hover effect */
+}
+
+/* Hover effect for format items */
+
+/* Hide the default radio/checkbox input */
+.form-check-input {
+  display: none; /* Hide the actual input */
+}
+
+/* Style for the label to make it look like a button */
+.form-check-label {
+  display: inline-block;
+  padding: 10px 15px;
+  border: 2px solid #007bff; /* Blue border */
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s; /* Transition for hover effect */
+}
+
+/* Change the label background and border when selected */
+.form-check-input:checked + .form-check-label {
+  background-color: #007bff; /* Blue background when checked */
+  color: white; /* White text color */
+  border-color: #0056b3; /* Darker border when checked */
+}
+
+/* Change the label background on hover */
+.form-check-label:hover {
+  background-color: rgba(0, 123, 255, 0.1); /* Light blue background on hover */
+}
