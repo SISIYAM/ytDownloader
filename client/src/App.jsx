@@ -8,6 +8,8 @@ const App = () => {
   const [videoFormats, setVideoFormats] = useState([]);
   const [audioFormats, setAudioFormats] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [audioLoading, setAudioLoading] = useState(false);
   const [selectedVideoQuality, setSelectedVideoQuality] = useState("");
   const [selectedAudioQuality, setSelectedAudioQuality] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
@@ -73,7 +75,7 @@ const App = () => {
     )
       return;
 
-    setLoading(true);
+    type === "audio" ? setAudioLoading(true) : setVideoLoading(true);
     const quality =
       type === "video" ? selectedVideoQuality : selectedAudioQuality;
 
@@ -84,6 +86,13 @@ const App = () => {
       videoUrl
     )}&quality=${quality}`;
 
+    // Prompt user for the filename
+    const userFilename = window.prompt(
+      `Enter the filename to save as (without extension):`,
+      title
+    );
+    const finalFilename = userFilename ? userFilename : title; // Default to title if no input
+
     try {
       const response = await axios.get(url, { responseType: "blob" });
       const blob = new Blob([response.data], {
@@ -93,15 +102,15 @@ const App = () => {
       link.href = window.URL.createObjectURL(blob);
       link.setAttribute(
         "download",
-        `${title || "download"}.${type === "video" ? "mp4" : "mp3"}`
-      ); // Use the fetched title for the filename
+        `${finalFilename}.${type === "video" ? "mp4" : "mp3"}`
+      ); // Use the user input for the filename
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
       console.error(`Error downloading ${type}:`, error);
     } finally {
-      setLoading(false);
+      type === "audio" ? setAudioLoading(false) : setVideoLoading(false);
     }
   };
 
@@ -139,7 +148,7 @@ const App = () => {
   }, [videoUrl]);
 
   return (
-    <div className="container mt-5">
+    <div className="container m-5">
       <h1 className="text-center">YouTube Video Downloader</h1>
       <div className="mb-3">
         <input
@@ -183,7 +192,7 @@ const App = () => {
         })}
       </div>
       <button className="btn btn-primary" onClick={() => downloadFile("video")}>
-        Download Video
+        {videoLoading ? "Downloading..." : "Download Video"}
       </button>
 
       <h2 className="mt-4">Select Audio Quality:</h2>
@@ -217,7 +226,7 @@ const App = () => {
         className="btn btn-danger mt-2"
         onClick={() => downloadFile("audio")}
       >
-        Download Audio
+        {audioLoading ? "Downloading..." : "Download Audio"}
       </button>
     </div>
   );
