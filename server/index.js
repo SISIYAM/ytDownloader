@@ -45,7 +45,9 @@ app.get("/download/video", async (req, res) => {
 
   try {
     res.header("Content-Disposition", `attachment; filename="video.mp4"`);
-    ytdl(videoUrl, { quality })
+    ytdl(videoUrl, {
+      filter: (format) => format.itag === parseInt(quality),
+    })
       .on("error", (error) => {
         console.error("Error downloading video:", error);
         res
@@ -75,12 +77,6 @@ app.get("/download/audio", async (req, res) => {
 
     const audioStream = ytdl(videoUrl, {
       filter: (format) => format.hasAudio && format.itag === parseInt(quality),
-      requestOptions: {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
-        },
-      },
     });
 
     audioStream.on("error", (error) => {
