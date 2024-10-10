@@ -34,6 +34,7 @@ const App = () => {
       const response = await axios.get("http://localhost:5000/formats", {
         params: { url: videoUrl },
       });
+      console.log(response.data.videoFormats);
 
       const uniqueVideoFormats = filterUniqueFormats(
         response.data.videoFormats
@@ -44,8 +45,6 @@ const App = () => {
 
       setVideoFormats(uniqueVideoFormats);
       setAudioFormats(uniqueAudioFormats);
-      console.log("Video", uniqueVideoFormats);
-      console.log("Audio", uniqueAudioFormats);
     } catch (error) {
       console.error("Error fetching formats:", error);
     } finally {
@@ -67,24 +66,18 @@ const App = () => {
     return "download"; // Fallback title
   };
 
-  const downloadFile = async (type) => {
-    if (
-      !videoUrl ||
-      (type === "video" && !selectedVideoQuality) ||
-      (type === "audio" && !selectedAudioQuality)
-    )
-      return;
+  const downloadFile = async () => {
+    if (!videoUrl) return;
 
-    type === "audio" ? setAudioLoading(true) : setVideoLoading(true);
-    const quality =
-      type === "video" ? selectedVideoQuality : selectedAudioQuality;
+    // Set loading state
+    setVideoLoading(true);
 
     // Fetch the video title if not already fetched
     let title = videoTitle || (await fetchTitle());
 
-    const url = `http://localhost:5000/download/${type}?url=${encodeURIComponent(
+    const url = `http://localhost:5000/download/video?url=${encodeURIComponent(
       videoUrl
-    )}&quality=${quality}`;
+    )}`;
 
     // Prompt user for the filename
     const userFilename = window.prompt(
@@ -94,23 +87,27 @@ const App = () => {
     const finalFilename = userFilename ? userFilename : title; // Default to title if no input
 
     try {
+      // Request the video file as a blob
       const response = await axios.get(url, { responseType: "blob" });
+
+      // Create a blob and a link to download it
       const blob = new Blob([response.data], {
-        type: type === "video" ? "video/mp4" : "audio/mpeg",
+        type: "video/mp4", // Set the correct MIME type
       });
       const link = document.createElement("a");
       link.href = window.URL.createObjectURL(blob);
       link.setAttribute(
         "download",
-        `${finalFilename}.${type === "video" ? "mp4" : "mp3"}`
-      ); // Use the user input for the filename
+        `${finalFilename}.mp4` // Use the user input for the filename
+      );
       document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      link.click(); // Trigger the download
+      document.body.removeChild(link); // Clean up the DOM
     } catch (error) {
-      console.error(`Error downloading ${type}:`, error);
+      console.error(`Error downloading video:`, error);
     } finally {
-      type === "audio" ? setAudioLoading(false) : setVideoLoading(false);
+      // Reset loading state
+      setVideoLoading(false);
     }
   };
 
