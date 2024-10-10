@@ -169,25 +169,33 @@ const App = () => {
         {videoFormats.map((format, index) => {
           const size = calculateFileSize(format.bitrate, 180); // Assuming a duration of 180 seconds
           return (
-            <div
-              key={`${format.itag}-${index}`}
-              className="form-check format-item"
-            >
-              <input
-                type="radio"
-                id={`video-${format.itag}`}
-                name="videoQuality"
-                value={format.itag}
-                className="form-check-input"
-                onChange={(e) => setSelectedVideoQuality(e.target.value)}
-              />
-              <label
-                htmlFor={`video-${format.itag}`}
-                className="form-check-label"
-              >
-                {format.qualityLabel} (Approx. {size})
-              </label>
-            </div>
+            <>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <div
+                  key={`${format.itag}-${index}`}
+                  className="form-check format-item"
+                >
+                  <input
+                    type="radio"
+                    id={`video-${format.itag}`}
+                    name="videoQuality"
+                    value={format.itag}
+                    className="form-check-input"
+                    onChange={(e) => setSelectedVideoQuality(e.target.value)}
+                  />
+                  <label
+                    htmlFor={`video-${format.itag}`}
+                    className="form-check-label"
+                    style={{ width: "100px", textAlign: "center" }}
+                  >
+                    {format.qualityLabel}
+                  </label>
+                </div>
+                <span style={{ margin: "0 10px", textAlign: "center" }}>
+                  {size}
+                </span>
+              </div>
+            </>
           );
         })}
       </div>
@@ -200,25 +208,33 @@ const App = () => {
         {audioFormats.map((format, index) => {
           const size = calculateFileSize(format.bitrate, 180); // Assuming a duration of 180 seconds
           return (
-            <div
-              key={`${format.itag}-${index}`}
-              className="form-check format-item"
-            >
-              <input
-                type="radio"
-                id={`audio-${format.itag}`}
-                name="audioQuality"
-                value={format.itag}
-                className="form-check-input"
-                onChange={(e) => setSelectedAudioQuality(e.target.value)}
-              />
-              <label
-                htmlFor={`audio-${format.itag}`}
-                className="form-check-label"
-              >
-                {formatAudioLabel(format)} (Approx. {size})
-              </label>
-            </div>
+            <>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <div
+                  key={`${format.itag}-${index}`}
+                  className="form-check format-item"
+                >
+                  <input
+                    type="radio"
+                    id={`audio-${format.itag}`}
+                    name="audioQuality"
+                    value={format.itag}
+                    className="form-check-input"
+                    onChange={(e) => setSelectedAudioQuality(e.target.value)}
+                  />
+                  <label
+                    htmlFor={`audio-${format.itag}`}
+                    className="form-check-label"
+                    style={{ width: "100px", textAlign: "center" }}
+                  >
+                    {formatAudioLabel(format)}
+                  </label>
+                </div>
+                <span style={{ margin: "0 10px", textAlign: "center" }}>
+                  {size}
+                </span>
+              </div>
+            </>
           );
         })}
       </div>
