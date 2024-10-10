@@ -46,6 +46,7 @@ const App = () => {
 
       setVideoFormats(uniqueVideoFormats);
       setAudioFormats(uniqueAudioFormats);
+      setVideoSrcUrl(response.data.videoFormats[0].url);
     } catch (error) {
       console.error("Error fetching formats:", error);
     } finally {
@@ -181,105 +182,165 @@ const App = () => {
   }, [videoUrl]);
 
   return (
-    <div className="container m-5">
-      <h1 className="">YouTube Video Downloader</h1>
-      <div className="mb-3">
+    <div className="container">
+      <h1>YouTube Video Downloader</h1>
+      <div className="input-group">
+        <label htmlFor="video-url">Enter YouTube Video URL:</label>
         <input
           type="text"
-          className="form-control"
           value={videoUrl}
           onChange={(e) => setVideoUrl(e.target.value)}
-          placeholder="Enter video URL"
+          id="video-url"
+          placeholder="https://www.youtube.com/watch?v=example"
         />
       </div>
-      {loading && <p className="text-center">Loading...</p>}
+      {/* Display instructions if no video URL is entered */}
+      {!videoUrl && (
+        <div className="instructions">
+          <h2>How to Download YouTube Videos or Audio:</h2>
+          <ol>
+            <li>Enter the YouTube video URL in the input box above.</li>
+            <li>
+              Once the URL is entered, available video and audio formats will
+              appear.
+            </li>
+            <li>Choose the video or audio format you want.</li>
+            <li>
+              Click on the "Download Video" or "Download Audio" button to start
+              the download.
+            </li>
+          </ol>
+        </div>
+      )}
+      {loading && (
+        <div class="text-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only"></span>
+          </div>
+        </div>
+      )}
 
-      {/* Display the video title below the input field */}
-      {videoTitle && <h5 className="">{videoTitle}</h5>}
-
-      <div>
-        <video src={videoSrcUrl} controls></video>
+      <div className="preview">
+        {videoTitle && <h2>{videoTitle}</h2>}
+        {videoSrcUrl && (
+          <video src={videoSrcUrl} autoPlay id="video-preview" controls></video>
+        )}
       </div>
-      <h2>Select Video Quality:</h2>
-      <div className="formats-container">
-        {videoFormats.map((format, index) => {
-          const size = calculateFileSize(format.bitrate, 180);
-          return (
-            <>
-              <div
-                key={`${format.itag}-${index}`}
-                style={{ display: "flex", flexDirection: "column" }}
-              >
-                <div className="form-check format-item">
+
+      {videoFormats.length > 0 ? (
+        <div className="quality-selection">
+          <h2>Select Video Quality</h2>
+          <div className="quality-options">
+            {videoFormats.map((format, index) => {
+              const size = calculateFileSize(format.bitrate, 180);
+              return (
+                <label className="quality-option">
                   <input
                     type="radio"
-                    id={`video-${format.itag}`}
-                    name="videoQuality"
+                    name="video-quality"
                     value={format.url}
-                    className="form-check-input"
                     onChange={(e) => setVideoSrcUrl(e.target.value)}
                   />
-                  <label
-                    htmlFor={`video-${format.itag}`}
-                    className="form-check-label"
-                    style={{ width: "100px", textAlign: "center" }}
-                  >
-                    {format.qualityLabel}
-                  </label>
-                </div>
-                <span style={{ margin: "0 10px", textAlign: "center" }}>
-                  {size}
-                </span>
-              </div>
-            </>
-          );
-        })}
-      </div>
-      <button className="btn btn-primary" onClick={() => downloadVideo()}>
-        {videoLoading ? "Downloading..." : "Download Video"}
-      </button>
+                  <span className="quality-box">{format.qualityLabel}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
 
-      <h2 className="mt-4">Select Audio Quality:</h2>
-      <div className="formats-container">
-        {audioFormats.map((format, index) => {
-          const size = calculateFileSize(format.bitrate, 180);
-          return (
-            <>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <div
-                  key={`${format.itag}-${index}`}
-                  className="form-check format-item"
-                >
+      {audioFormats.length > 0 ? (
+        <div className="quality-selection">
+          <h2>Select Audio Quality</h2>
+          <div className="quality-options">
+            {audioFormats.map((format, index) => {
+              const size = calculateFileSize(format.bitrate, 180);
+              return (
+                <label className="quality-option">
                   <input
                     type="radio"
-                    id={`audio-${format.itag}`}
-                    name="audioQuality"
+                    name="audio-quality"
                     value={format.itag}
-                    className="form-check-input"
                     onChange={(e) => setSelectedAudioQuality(e.target.value)}
                   />
-                  <label
-                    htmlFor={`audio-${format.itag}`}
-                    className="form-check-label"
-                    style={{ width: "100px", textAlign: "center" }}
-                  >
+                  <span className="quality-box">
                     {formatAudioLabel(format)}
-                  </label>
-                </div>
-                <span style={{ margin: "0 10px", textAlign: "center" }}>
-                  {size}
-                </span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
+
+      <div className="button-group">
+        {videoFormats.length > 0 ? (
+          <button
+            disabled={videoLoading}
+            className={`download-btn ${videoLoading ? "loading" : "video"}`}
+            id="download-video"
+            onClick={() => downloadVideo()}
+          >
+            {videoLoading ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "10px",
+                }}
+              >
+                <span
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Downloading...
               </div>
-            </>
-          );
-        })}
+            ) : (
+              "Download Video"
+            )}
+          </button>
+        ) : (
+          ""
+        )}
+        {audioFormats.length > 0 ? (
+          <button
+            disabled={audioLoading}
+            className={`download-btn ${audioLoading ? "loading" : ""}`}
+            id="download-audio"
+            onClick={() => downloadFile("audio")}
+          >
+            {audioLoading ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "10px",
+                }}
+              >
+                <span
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Downloading...
+              </div>
+            ) : (
+              "Download Audio"
+            )}
+          </button>
+        ) : (
+          ""
+        )}
       </div>
-      <button
-        className="btn btn-danger mt-2"
-        onClick={() => downloadFile("audio")}
-      >
-        {audioLoading ? "Downloading..." : "Download Audio"}
-      </button>
     </div>
   );
 };

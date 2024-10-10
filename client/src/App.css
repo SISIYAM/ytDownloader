@@ -1,38 +1,174 @@
-.formats-container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 20px;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #121212; /* Dark background for body */
+  color: #e0e0e0; /* Light text for dark mode */
+}
+
+.container {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+  background: #1e1e1e; /* Darker container background */
+  border-radius: 8px;
+  border: 2px solid; /* Gradient border */
+  border-image: linear-gradient(
+    to right,
+    #00ff99,
+    #009933
+  ); /* Green gradient */
+  border-image-slice: 1;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #ffffff; /* White for heading */
+}
+
+.input-group {
   margin-bottom: 20px;
 }
 
-.format-item {
+label {
+  display: block;
+  margin-bottom: 5px;
+  color: #cccccc; /* Lighter color for labels */
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #555; /* Darker border */
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: #333; /* Dark input field background */
+  color: #f0f0f0; /* Light text color */
+  transition: border-color 0.3s, box-shadow 0.3s;
+  outline: none;
+}
+
+input[type="text"]:hover {
+  border-color: #00ff99; /* Greenish color on hover */
+}
+
+input[type="text"]:focus {
+  border-color: #00ff99; /* Green color on focus */
+  box-shadow: 0 0 5px rgba(0, 255, 153, 0.5); /* Green shadow on focus */
+}
+
+input[type="text"]::placeholder {
+  color: #888; /* Placeholder in light gray */
+  opacity: 1;
+  font-style: italic;
+}
+
+.preview {
+  margin-bottom: 20px;
+}
+
+video {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin-top: 10px;
+  background-color: #000; /* Dark video background */
+}
+
+.quality-options {
   display: flex;
-  align-items: center;
-  padding: 5px 10px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.quality-option {
+  position: relative;
+  margin: 10px 0;
+}
+
+input[type="radio"] {
+  display: none; /* Hide the default radio button */
+}
+
+.quality-box {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #333; /* Dark background for quality boxes */
+  border-radius: 4px;
+  border: 2px solid #555; /* Darker border */
+  transition: background-color 0.3s, border-color 0.3s;
+  cursor: pointer;
+}
+
+input[type="radio"]:checked + .quality-box {
+  background-color: #00ff99; /* Green background when selected */
+  color: black; /* Black text when selected */
+  border-color: #009933; /* Dark green border when selected */
+}
+
+input[type="radio"]:focus + .quality-box {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 255, 153, 0.5); /* Green shadow effect on focus */
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+.download-btn {
+  padding: 10px 20px;
+  background-color: #28a745; /* Green background */
+  color: white;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
 }
 
-.form-check-input {
-  display: none;
-}
-
-.form-check-label {
-  display: inline-block;
-  padding: 10px 15px;
-  border: 2px solid #007bff;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s, border-color 0.3s;
-}
-
-.form-check-input:checked + .form-check-label {
-  background-color: #007bff;
+.download-btn.video {
+  padding: 10px 20px;
+  background-color: #196ae4; /* Blue for video download */
   color: white;
-  border-color: #0056b3;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.form-check-label:hover {
-  background-color: rgba(0, 123, 255, 0.1);
+.download-btn.loading {
+  padding: 10px 20px;
+  background-color: #e81051; /* Red for loading */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.download-btn.video:hover {
+  background-color: #1e5a8b; /* Darker blue on hover */
+}
+
+.download-btn:hover {
+  background-color: #218838; /* Darker green on hover */
+}
+
+@media (max-width: 600px) {
+  .button-group {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .download-btn {
+    width: 100%;
+    margin: 5px 0;
+  }
 }
