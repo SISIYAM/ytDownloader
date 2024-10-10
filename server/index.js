@@ -2,7 +2,6 @@ const express = require("express");
 const ytdl = require("@distube/ytdl-core");
 const cors = require("cors");
 const axios = require("axios");
-const puppeteer = require("puppeteer");
 const app = express();
 app.use(
   cors({
@@ -10,23 +9,11 @@ app.use(
   })
 );
 
-// Function to fetch video formats using Puppeteer
-const fetchVideoFormats = async (videoUrl) => {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  await page.goto(videoUrl, { waitUntil: "networkidle2" });
+app.get("/", (req, res) => {
+  res.send("Success!");
+});
 
-  // Use ytdl-core to extract video information
-  const info = await ytdl.getInfo(videoUrl);
-  await browser.close();
-
-  const videoFormats = ytdl.filterFormats(info.formats, "audioandvideo");
-  const audioFormats = ytdl.filterFormats(info.formats, "audioonly");
-
-  return { videoFormats, audioFormats };
-};
-
-// Endpoint to fetch formats
+// fetch available formats
 app.get("/formats", async (req, res) => {
   try {
     const videoUrl = req.query.url;
@@ -35,9 +22,25 @@ app.get("/formats", async (req, res) => {
       return res.status(400).json({ error: "URL is required" });
     }
 
-    const { videoFormats, audioFormats } = await fetchVideoFormats(videoUrl);
+    // validate the URL
+    const videoIdMatch = videoUrl.match(
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
 
-    res.json({ videoFormats, audioFormats });
+    if (!videoIdMatch) {
+      return res.status(400).json({ error: "Invalid YouTube URL" });
+    }
+
+    const info = await ytdl.getInfo(videoUrl);
+
+    // video and audio formats
+    const videoFormats = ytdl.filterFormats(info.formats, "audioandvideo");
+    const audioFormats = ytdl.filterFormats(info.formats, "audioonly");
+
+    res.json({
+      videoFormats,
+      audioFormats,
+    });
   } catch (error) {
     console.error("Error fetching formats:", error);
     res
@@ -45,6 +48,7 @@ app.get("/formats", async (req, res) => {
       .json({ error: "Failed to fetch video formats. " + error.message });
   }
 });
+
 // route to download video
 app.get("/download/video", async (req, res) => {
   const { url } = req.query;
