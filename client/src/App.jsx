@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
-import { fetchYouTubeTitle, getYouTubeVideoID } from "./utilities/method";
+import { fetchYouTubeTitle, getYouTubeVideoID } from "./utilities/method"; // Assuming this exists
+
+const baseUrl = "http://localhost:5000";
 
 const App = () => {
   const [videoUrl, setVideoUrl] = useState("");
@@ -15,6 +17,7 @@ const App = () => {
   const [videoTitle, setVideoTitle] = useState("");
   const [videoSrcUrl, setVideoSrcUrl] = useState("");
 
+  // Filters unique formats based on quality label and bitrate
   const filterUniqueFormats = (formats) => {
     const uniqueFormats = new Map();
 
@@ -32,10 +35,9 @@ const App = () => {
     if (!videoUrl) return;
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:5000/formats", {
+      const response = await axios.get(`${baseUrl}/formats`, {
         params: { url: videoUrl },
       });
-      console.log(response.data.videoFormats);
 
       const uniqueVideoFormats = filterUniqueFormats(
         response.data.videoFormats
@@ -46,7 +48,7 @@ const App = () => {
 
       setVideoFormats(uniqueVideoFormats);
       setAudioFormats(uniqueAudioFormats);
-      setVideoSrcUrl(response.data.videoFormats[0].url);
+      setVideoSrcUrl(response.data.videoFormats[0]?.url); // Check if there's a video URL
     } catch (error) {
       console.error("Error fetching formats:", error);
     } finally {
@@ -82,7 +84,7 @@ const App = () => {
 
     let title = videoTitle || (await fetchTitle());
 
-    const url = `http://localhost:5000/download/${type}?url=${encodeURIComponent(
+    const url = `${baseUrl}/download/${type}?url=${encodeURIComponent(
       videoUrl
     )}&quality=${quality}`;
 
@@ -120,7 +122,7 @@ const App = () => {
 
     let title = videoTitle || (await fetchTitle());
 
-    const url = `http://localhost:5000/download/video?url=${encodeURIComponent(
+    const url = `${baseUrl}/download/video?url=${encodeURIComponent(
       videoSrcUrl
     )}`;
 
@@ -133,9 +135,7 @@ const App = () => {
     try {
       const response = await axios.get(url, { responseType: "blob" });
 
-      const blob = new Blob([response.data], {
-        type: "video/mp4",
-      });
+      const blob = new Blob([response.data], { type: "video/mp4" });
       const link = document.createElement("a");
       link.href = window.URL.createObjectURL(blob);
       link.setAttribute("download", `${finalFilename}.mp4`);
@@ -157,7 +157,7 @@ const App = () => {
     return `${bitrate} ${type}`;
   };
 
-  // method for calculate file size in KB, MB, or GB
+  // Calculate file size in human-readable format
   const calculateFileSize = (bitrate, duration) => {
     if (!bitrate) return "N/A";
     const sizeInBytes = (bitrate * duration) / 8; // convert bps to bytes
@@ -175,8 +175,8 @@ const App = () => {
   };
 
   useEffect(() => {
-    fetchFormats();
     if (videoUrl) {
+      fetchFormats();
       fetchTitle();
     }
   }, [videoUrl]);
@@ -194,151 +194,91 @@ const App = () => {
           placeholder="https://www.youtube.com/watch?v=example"
         />
       </div>
-      {/* Display instructions if no video URL is entered */}
+
+      {/* Instructions if no video URL is entered */}
       {!videoUrl && (
         <div className="instructions">
           <h2>How to Download YouTube Videos or Audio:</h2>
           <ol>
             <li>Enter the YouTube video URL in the input box above.</li>
-            <li>
-              Once the URL is entered, available video and audio formats will
-              appear.
-            </li>
-            <li>Choose the video or audio format you want.</li>
-            <li>
-              Click on the "Download Video" or "Download Audio" button to start
-              the download.
-            </li>
+            <li>Available video and audio formats will appear.</li>
+            <li>Select the desired format and quality.</li>
+            <li>Click "Download Video" or "Download Audio" to download.</li>
           </ol>
         </div>
       )}
+
       {loading && (
-        <div class="text-center my-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="sr-only"></span>
+        <div className="text-center my-5">
+          <div className="spinner-border text-primary" role="status">
+            <span className="sr-only"></span>
           </div>
         </div>
       )}
 
-      <div className="preview">
-        {videoTitle && <h2>{videoTitle}</h2>}
-        {videoSrcUrl && (
-          <video src={videoSrcUrl} autoPlay id="video-preview" controls></video>
-        )}
-      </div>
+      {videoTitle && <h2>{videoTitle}</h2>}
+      {videoSrcUrl && (
+        <video src={videoSrcUrl} controls autoPlay id="video-preview"></video>
+      )}
 
-      {videoFormats.length > 0 ? (
+      {/* Video quality selection */}
+      {videoFormats.length > 0 && (
         <div className="quality-selection">
           <h2>Select Video Quality</h2>
           <div className="quality-options">
-            {videoFormats.map((format, index) => {
-              const size = calculateFileSize(format.bitrate, 180);
-              return (
-                <label className="quality-option">
-                  <input
-                    type="radio"
-                    name="video-quality"
-                    value={format.url}
-                    onChange={(e) => setVideoSrcUrl(e.target.value)}
-                  />
-                  <span className="quality-box">{format.qualityLabel}</span>
-                </label>
-              );
-            })}
+            {videoFormats.map((format, index) => (
+              <label key={index} className="quality-option">
+                <input
+                  type="radio"
+                  name="video-quality"
+                  value={format.url}
+                  onChange={(e) => setVideoSrcUrl(e.target.value)}
+                />
+                <span className="quality-box">{format.qualityLabel}</span>
+              </label>
+            ))}
           </div>
         </div>
-      ) : (
-        ""
       )}
 
-      {audioFormats.length > 0 ? (
+      {/* Audio quality selection */}
+      {audioFormats.length > 0 && (
         <div className="quality-selection">
           <h2>Select Audio Quality</h2>
           <div className="quality-options">
-            {audioFormats.map((format, index) => {
-              const size = calculateFileSize(format.bitrate, 180);
-              return (
-                <label className="quality-option">
-                  <input
-                    type="radio"
-                    name="audio-quality"
-                    value={format.itag}
-                    onChange={(e) => setSelectedAudioQuality(e.target.value)}
-                  />
-                  <span className="quality-box">
-                    {formatAudioLabel(format)}
-                  </span>
-                </label>
-              );
-            })}
+            {audioFormats.map((format, index) => (
+              <label key={index} className="quality-option">
+                <input
+                  type="radio"
+                  name="audio-quality"
+                  value={format.itag}
+                  onChange={(e) => setSelectedAudioQuality(e.target.value)}
+                />
+                <span className="quality-box">{formatAudioLabel(format)}</span>
+              </label>
+            ))}
           </div>
         </div>
-      ) : (
-        ""
       )}
 
       <div className="button-group">
-        {videoFormats.length > 0 ? (
+        {videoFormats.length > 0 && (
           <button
             disabled={videoLoading}
-            className={`download-btn ${videoLoading ? "loading" : "video"}`}
-            id="download-video"
-            onClick={() => downloadVideo()}
+            className={`download-btn ${videoLoading ? "loading" : ""}`}
+            onClick={downloadVideo}
           >
-            {videoLoading ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "10px",
-                }}
-              >
-                <span
-                  class="spinner-border spinner-border-sm"
-                  role="status"
-                  aria-hidden="true"
-                ></span>
-                Downloading...
-              </div>
-            ) : (
-              "Download Video"
-            )}
+            {videoLoading ? "Downloading..." : "Download Video"}
           </button>
-        ) : (
-          ""
         )}
-        {audioFormats.length > 0 ? (
+        {audioFormats.length > 0 && (
           <button
             disabled={audioLoading}
             className={`download-btn ${audioLoading ? "loading" : ""}`}
-            id="download-audio"
             onClick={() => downloadFile("audio")}
           >
-            {audioLoading ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "10px",
-                }}
-              >
-                <span
-                  class="spinner-border spinner-border-sm"
-                  role="status"
-                  aria-hidden="true"
-                ></span>
-                Downloading...
-              </div>
-            ) : (
-              "Download Audio"
-            )}
+            {audioLoading ? "Downloading..." : "Download Audio"}
           </button>
-        ) : (
-          ""
         )}
       </div>
     </div>
