@@ -3,7 +3,11 @@ const ytdl = require("@distube/ytdl-core");
 const cors = require("cors");
 const axios = require("axios");
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
 // fetch available formats
 app.get("/formats", async (req, res) => {
