@@ -3,7 +3,8 @@ import axios from "axios";
 import "./App.css";
 import { fetchYouTubeTitle, getYouTubeVideoID } from "./utilities/method"; // Assuming this exists
 
-const baseUrl = "https://ytdownloader-4t9v.onrender.com";
+// const baseUrl = "https://ytdownloader-4t9v.onrender.com";
+const baseUrl = "http://localhost:5000";
 
 const App = () => {
   const [videoUrl, setVideoUrl] = useState("");
@@ -48,7 +49,7 @@ const App = () => {
 
       setVideoFormats(uniqueVideoFormats);
       setAudioFormats(uniqueAudioFormats);
-      setVideoSrcUrl(response.data.videoFormats[0]?.url); // Check if there's a video URL
+      setVideoSrcUrl(response.data.videoFormats[0]?.url);
     } catch (error) {
       console.error("Error fetching formats:", error);
     } finally {
