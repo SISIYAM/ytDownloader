@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
-import { fetchYouTubeTitle, getYouTubeVideoID } from "./utilities/method"; // Assuming this exists
+import { fetchYouTubeTitle, getYouTubeVideoID } from "./utilities/method";
+import Alert from "./components/Alert";
 
 // const baseUrl = "https://ytdownloader-4t9v.onrender.com";
 const baseUrl = "http://localhost:5000";
@@ -17,6 +18,7 @@ const App = () => {
   const [selectedAudioQuality, setSelectedAudioQuality] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
   const [videoSrcUrl, setVideoSrcUrl] = useState("");
+  const [error, setError] = useState("");
 
   // Filters unique formats based on quality label and bitrate
   const filterUniqueFormats = (formats) => {
@@ -51,6 +53,7 @@ const App = () => {
       setAudioFormats(uniqueAudioFormats);
       setVideoSrcUrl(response.data.videoFormats[0]?.url);
     } catch (error) {
+      setError(error.response.data.error);
       console.error("Error fetching formats:", error);
     } finally {
       setLoading(false);
@@ -217,7 +220,9 @@ const App = () => {
         </div>
       )}
 
-      {videoTitle && <h2>{videoTitle}</h2>}
+      {error && <Alert color={`danger`} message={error} />}
+
+      {videoTitle && <b className="text-info">{videoTitle}</b>}
       {videoSrcUrl && (
         <video src={videoSrcUrl} controls autoPlay id="video-preview"></video>
       )}
